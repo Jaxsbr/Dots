@@ -1,9 +1,9 @@
 var game;
-var mouseLocation;
+var mouseLocation = { x: 0, y: 0 };
 
 window.addEventListener('load', function() {
     game = new Game();
-    game.Render();
+    game.Loop();
 });
 
 window.addEventListener('mousemove', function(mouseEvent) {
@@ -30,17 +30,38 @@ Game = function() {
     this.gameInfo.AddPlayer('player2SocketId', 'blue', 30, 40);
     this.gameInfo.AddPlayer('player3SocketId', 'green', 50, 20);
 
-    // this.player = new Player('player1SocketId');
-    // this.player.GetRenderPayload(this.gameInfo);
+    this.player = new Player('player1SocketId', 'red');
+    this.player.GetRenderPayload(this.gameInfo);
+}
+
+Game.prototype.Loop = function() {
+    requestAnimationFrame(this.Loop.bind(this));
+
+    // var now = Date.now();
+    // var delta = now - $.Then;
+    // $.Delta = delta / 1000;
+    // $.Then = now;
+
+    this.Update();
+    this.Render();
+}
+
+Game.prototype.Update = function() {
+    this.player.Update();
 }
 
 Game.prototype.Render = function() {
     this.gameInfo.PlayerLocations.forEach(playerLocation => {
-        this.RenderPlayer(playerLocation);
+        if (playerLocation.socketId === this.player.socketId) { 
+            this.player.Render(this.graphics);
+        }
+        else {
+            this.RenderOtherPlayers(playerLocation);
+        }
     });
 }
 
-Game.prototype.RenderPlayer = function(playerLocation) {
+Game.prototype.RenderOtherPlayers = function(playerLocation) {
     this.graphics.fillStyle = playerLocation.style;
     this.graphics.beginPath();
     this.graphics.scale(1, 1);
@@ -75,12 +96,9 @@ GameInfo.prototype.RemovePlayer = function (socketId) {
 Player = function(socketId, style) {
     this.socketId = socketId;
     this.style = style;
-    this.location = { x: 0, y: 0 };
+    this.location = { x: 10, y: 10 };
     this.gameInfo = new GameInfo();
-}
-
-Player.prototype.GetRenderPayload = function (gameInfo) {
-    this.gameInfo = gameInfo;
+    this.moveSpeed = 0.5;
 }
 
 Player.prototype.Update = function () {
@@ -88,5 +106,28 @@ Player.prototype.Update = function () {
     // 1) Calculate and normalize direction vector from current location to mouse location
     // 2) Calculate player velocity by adding move speed to direction vector
 
-    let normalizedDirectionVector = getNormalizedVector(this.location.x, this.location.y, mouseLocation.x, mouseLocation.y);
+    let normalizedDirectionVector = getNormalizedVector(mouseLocation.x, mouseLocation.y, this.location.x, this.location.y);
+    let velocity = {
+        x: normalizedDirectionVector.x * this.moveSpeed,
+        y: normalizedDirectionVector.y * this.moveSpeed
+    };
+    let velocityValid = !(isNaN(velocity.x) || isNaN(velocity.y));
+    if (velocityValid) {
+        this.location.x += velocity.x;
+        this.location.y += velocity.y;
+    }
+}
+
+Player.prototype.GetRenderPayload = function (gameInfo) {
+    this.gameInfo = gameInfo;
+}
+
+Player.prototype.Render = function (graphics) {
+    graphics.fillStyle = this.style;
+    graphics.beginPath();
+    graphics.scale(1, 1);
+    graphics.arc(this.location.x, this.location.y, 10, 0, 2 * Math.PI);
+    graphics.fill();
+    graphics.strokeStyle = 'black';
+    graphics.stroke();
 }
