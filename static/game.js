@@ -1,20 +1,23 @@
 var game;
 var mouseLocation = { x: 0, y: 0 };
+var socket;
 
 window.addEventListener('load', function() {
     game = new Game();
     game.Loop();
+
+    // TODO: pass players alais io(alias)
+    socket = io();
+
+    socket.on('connect', function(){
+        console.log('connected...' + this.id);
+        let color = getRandomcolor();
+        game.player = new Player(this.id, color);
+    });
 });
 
 window.addEventListener('mousemove', function(mouseEvent) {
     mouseLocation = { x: mouseEvent.x, y: mouseEvent.y };
-});
-
-// TODO: pass players alais io(alias)
-var socket = io();
-
-socket.on('player joined', function(socketId){
-    console.log('player joined');
 });
 
 
@@ -25,6 +28,13 @@ getNormalizedVector = function (x1, y1, x2, y2) {
     return { x: px / dist, y: py / dist };
 }
 
+getRandomcolor = function () {
+    let colors = ['red', 'blue', 'green', 'yellow'];
+
+    let index = Math.floor(Math.random() * (colors.length - 0) + 0);
+
+    return colors[index];
+}
 
 Game = function() {
     this.canvas = document.getElementById('canvas');
@@ -34,14 +44,16 @@ Game = function() {
     this.graphics.setTransform(1, 0, 0, 1, 0, 0)
 
     this.gameInfo = new GameInfo();
-    this.gameInfo.AddPlayer('player1SocketId', 'red', 10, 10);
-    this.gameInfo.AddPlayer('player2SocketId', 'blue', 30, 40);
-    this.gameInfo.AddPlayer('player3SocketId', 'green', 50, 20);
+    // this.gameInfo.AddPlayer('player1SocketId', 'red', 10, 10);
+    // this.gameInfo.AddPlayer('player2SocketId', 'blue', 30, 40);
+    // this.gameInfo.AddPlayer('player3SocketId', 'green', 50, 20);
 
-    // TODO:
-    // On socket connection add a new player
-    this.player = new Player('player1SocketId', 'red');
-    this.player.GetRenderPayload(this.gameInfo);
+
+    socket.on('player info', function (playerInfo) {
+        // TODO:
+        // Insert or update
+        // This should not be the current players info, only other players info
+    });
 }
 
 Game.prototype.Loop = function() {
@@ -57,18 +69,30 @@ Game.prototype.Loop = function() {
 }
 
 Game.prototype.Update = function() {
-    this.player.Update();
+    if (this.player) {
+        this.player.Update();
+    }
+
+    // TODO:
+    // Post the players coordinates to the server
+    socket.emit('player info', { 
+        socketId: this.player.socketId, 
+        style: this.player.style,
+        x: this.player.location.x, 
+        y: this.player.location.y 
+    });
 }
 
 Game.prototype.Render = function() {
     this.gameInfo.PlayerLocations.forEach(playerLocation => {
-        if (playerLocation.socketId === this.player.socketId) { 
-            this.player.Render(this.graphics);
-        }
-        else {
+        if (playerLocation.socketId !== this.player.socketId) { 
             this.RenderOtherPlayers(playerLocation);
         }
     });
+
+    if (this.player) {
+        this.player.Render(this.graphics);
+    }
 }
 
 Game.prototype.RenderOtherPlayers = function(playerLocation) {

@@ -13,9 +13,11 @@ app.get("/", function(req, res) {
 // Broadcasts stored payloads to each socket at regular intervals
 
 io.on("connection", function(socket) {
-  console.log("a user connected");
+  console.log("a user connected" + socket.id);
 
-  io.emit('player joined', socket.id);
+  //io.emit('player joined', socket.id);
+  //socket.emit('player joined', socket.id);
+  //socket.broadcast.to(socket.id).emit('player joined', socket.id);
 
   // Send to all others sockets (exclude self)
   //socket.broadcast.emit('hi')
