@@ -5,3 +5,7 @@ PlayerInfo = function(socketId, alias, style, x, y) {
     this.x = x;
     this.y = y;
 }
+
+PlayerInfo.prototype.Clone = function() {
+    return PlayerInfo(this.socketId, this.alias, this.style, this.x, this.y);
+}

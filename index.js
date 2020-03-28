@@ -19,7 +19,7 @@ io.on("connection", function(socket) {
     // TODO:
     // Store all players info here.
     // This will be used to do collision detection.
-    socket.broadcast.emit(playerInfo);
+    socket.broadcast.emit('other player info', playerInfo);
   });
 
   socket.on("disconnect", function() {

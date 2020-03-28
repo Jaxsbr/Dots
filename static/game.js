@@ -12,10 +12,16 @@ window.addEventListener('load', function() {
     socket.on('connect', function(){
         console.log('connected...' + this.id);
         let color = getRandomcolor();
-        game.player = new Player(this.id, color);
+        let playerInfo = new PlayerInfo(this.id, 'alias', color, 10, 10);
+        game.player = new Player(playerInfo);
     });
 
-    socket.on('player info', game.GetOtherPlayerInfo.bind(this));
+    // TODO:
+    // Fix this, GetOtherPlayerInfo is either not being called
+    // or being called but with playerInfo undefined.
+    socket.on('other player info', function() {
+        game.GetOtherPlayerInfo.bind(this);
+    });
 });
 
 window.addEventListener('mousemove', function(mouseEvent) {
@@ -43,8 +49,12 @@ Game = function() {
     this.canvas.width = 600;
     this.canvas.height = 600;
     this.graphics = this.canvas.getContext('2d');
-    this.gameInfo = new GameInfo();
     this.playerInfoRegister = [];
+
+    // TODO:
+    // Add ellapsed vars for info broadcast
+    this.playerInfoBroadcastFreqency = 60; // 60 times per secon / 4 - 15
+    this.playerInfoBroadcastElapsed = 0;
 }
 
 Game.prototype.Loop = function() {
@@ -60,12 +70,16 @@ Game.prototype.Loop = function() {
 }
 
 Game.prototype.GetOtherPlayerInfo = function(playerInfo) {
-    // Receive other players info.
-    // Store their info and use it to render other players.
+    console.log('other player info received ' + playerInfo.socketId)
 
-    // TODO:
-    // Insert or update
-    // This should not be the current players info, only other players info
+    if (playerInfo.socketId !== this.player.playerInfo.socketId) { 
+        this.InsertUpdatePlayerInfo(playerInfo);
+    }
+    else {
+        // TODO:
+        // Remove after testing
+        console.warn('should not be getting your own player info')
+    }
 }
 
 Game.prototype.Update = function() {
@@ -78,29 +92,32 @@ Game.prototype.Update = function() {
         this.player.Update(directionVector);
     }
 
-    // TODO:
-    // This should be throttled, NOT once per game tick
-    // Post the players coordinates to the server
-    socket.emit('player info', { playerInfo: this.player.playerInfo });
+    this.playerInfoBroadcastElapsed++;
+    if (this.playerInfoBroadcastElapsed >= this.playerInfoBroadcastFreqency) {
+        this.playerInfoBroadcastElapsed = 0;
+
+        // Post the players coordinates to the server
+        socket.emit('player info', { playerInfo: this.player.playerInfo });
+    }
 }
 
 Game.prototype.Render = function() {
-    // this.gameInfo.PlayerLocations.forEach(playerLocation => {
-    //     if (playerLocation.socketId !== this.player.socketId) { 
-    //         this.RenderOtherPlayers(playerLocation);
-    //     }
-    // });
+    this.playerInfoRegister.forEach(playerInfo => {
+        if (playerInfo.socketId !== this.player.socketId) { 
+            this.RenderOtherPlayers(playerInfo);
+        }
+    });
 
     if (this.player) {
         this.player.Render(this.graphics);
     }
 }
 
-Game.prototype.RenderOtherPlayers = function(playerLocation) {
-    this.graphics.fillStyle = playerLocation.style;
+Game.prototype.RenderOtherPlayers = function(playerInfo) {
+    this.graphics.fillStyle = playerInfo.style;
     this.graphics.beginPath();
     this.graphics.scale(1, 1);
-    this.graphics.arc(playerLocation.x, playerLocation.y, 10, 0, 2 * Math.PI);
+    this.graphics.arc(playerInfo.x, playerInfo.y, 10, 0, 2 * Math.PI);
     this.graphics.fill();
 
     this.graphics.strokeStyle = 'black';
@@ -108,20 +125,22 @@ Game.prototype.RenderOtherPlayers = function(playerLocation) {
 }
 
 Game.prototype.InsertUpdatePlayerInfo = function (playerInfo) {
-    // TODO:
-    // Check if playerInfo exist
-    // Yes - Update
-    // No - Insert
+    for (let index = 0; index < this.playerInfoRegister.length; index++) {
+        if (playerInfo.socketId === this.player.playerInfo.socketId) {
+            this.playerInfoRegister[index] = playerInfo.Clone();
+            return;
+        }
+    }
 
-    //this.PlayerLocations.push({ socketId: socketId, style: style, x: x, y: y });
+    this.playerInfoRegister.push(playerInfo);
 }
 
-Game.prototype.RemovePlayer = function (socketId) {
-    // for (let index = 0; index < this.PlayerLocations.length; index++) {
-    //     const playerLocation = this.PlayerLocations[index];
-    //     if (playerLocation.socketId === socketId) {
-    //         this.PlayerLocations.splice(index, 1);
-    //         break;
-    //     }
-    // }
+Game.prototype.RemovePlayerInfo = function (socketId) {
+    for (let index = 0; index < this.playerInfoRegister.length; index++) {
+        const playerInfo = this.playerInfoRegister[index];
+        if (playerInfo.socketId === socketId) {
+            this.playerInfoRegister.splice(index, 1);
+            break;
+        }
+    }
 }

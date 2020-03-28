@@ -1,13 +1,9 @@
-Player = function(socketId, style, playerInfo) {
+Player = function(playerInfo) {
     this.playerInfo = playerInfo;
     this.moveSpeed = 0.5;
 }
 
 Player.prototype.Update = function (directionVector) {
-    // TODO: update the player location to follow the mouse
-    // 1) Calculate and normalize direction vector from current location to mouse location
-    // 2) Calculate player velocity by adding move speed to direction vector
-
     let velocity = {
         x: directionVector.x * this.moveSpeed,
         y: directionVector.y * this.moveSpeed
