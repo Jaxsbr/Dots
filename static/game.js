@@ -10,6 +10,14 @@ window.addEventListener('mousemove', function(mouseEvent) {
     mouseLocation = { x: mouseEvent.x, y: mouseEvent.y };
 });
 
+// TODO: pass players alais io(alias)
+var socket = io();
+
+socket.on('player joined', function(socketId){
+    console.log('player joined');
+});
+
+
 getNormalizedVector = function (x1, y1, x2, y2) {
     var px = x1 - x2;
     var py = y1 - y2;
@@ -30,6 +38,8 @@ Game = function() {
     this.gameInfo.AddPlayer('player2SocketId', 'blue', 30, 40);
     this.gameInfo.AddPlayer('player3SocketId', 'green', 50, 20);
 
+    // TODO:
+    // On socket connection add a new player
     this.player = new Player('player1SocketId', 'red');
     this.player.GetRenderPayload(this.gameInfo);
 }

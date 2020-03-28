@@ -15,6 +15,8 @@ app.get("/", function(req, res) {
 io.on("connection", function(socket) {
   console.log("a user connected");
 
+  io.emit('player joined', socket.id);
+
   // Send to all others sockets (exclude self)
   //socket.broadcast.emit('hi')
 
