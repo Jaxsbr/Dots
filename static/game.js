@@ -44,6 +44,7 @@ Game = function() {
     this.canvas.height = 600;
     this.graphics = this.canvas.getContext('2d');
     this.gameInfo = new GameInfo();
+    this.playerInfoRegister = [];
 }
 
 Game.prototype.Loop = function() {
@@ -69,25 +70,26 @@ Game.prototype.GetOtherPlayerInfo = function(playerInfo) {
 
 Game.prototype.Update = function() {
     if (this.player) {
-        this.player.Update();
+        let directionVector = getNormalizedVector(
+            mouseLocation.x, 
+            mouseLocation.y, 
+            this.player.playerInfo.x, 
+            this.player.playerInfo.y);
+        this.player.Update(directionVector);
     }
 
     // TODO:
+    // This should be throttled, NOT once per game tick
     // Post the players coordinates to the server
-    socket.emit('player info', { 
-        socketId: this.player.socketId, 
-        style: this.player.style,
-        x: this.player.location.x, 
-        y: this.player.location.y 
-    });
+    socket.emit('player info', { playerInfo: this.player.playerInfo });
 }
 
 Game.prototype.Render = function() {
-    this.gameInfo.PlayerLocations.forEach(playerLocation => {
-        if (playerLocation.socketId !== this.player.socketId) { 
-            this.RenderOtherPlayers(playerLocation);
-        }
-    });
+    // this.gameInfo.PlayerLocations.forEach(playerLocation => {
+    //     if (playerLocation.socketId !== this.player.socketId) { 
+    //         this.RenderOtherPlayers(playerLocation);
+    //     }
+    // });
 
     if (this.player) {
         this.player.Render(this.graphics);
@@ -105,64 +107,21 @@ Game.prototype.RenderOtherPlayers = function(playerLocation) {
     this.graphics.stroke();
 }
 
-
-GameInfo = function() {
-    // object signature:  { socketId: 'me', style: 'red', x: 100, y: 100 }
+Game.prototype.InsertUpdatePlayerInfo = function (playerInfo) {
     // TODO:
-    // Rename to playerInfo
-    this.PlayerLocations = [];
+    // Check if playerInfo exist
+    // Yes - Update
+    // No - Insert
+
+    //this.PlayerLocations.push({ socketId: socketId, style: style, x: x, y: y });
 }
 
-GameInfo.prototype.AddPlayer = function (socketId, style, x, y) {
-    this.PlayerLocations.push({ socketId: socketId, style: style, x: x, y: y });
-}
-
-GameInfo.prototype.RemovePlayer = function (socketId) {
-    for (let index = 0; index < this.PlayerLocations.length; index++) {
-        const playerLocation = this.PlayerLocations[index];
-        if (playerLocation.socketId === socketId) {
-            this.PlayerLocations.splice(index, 1);
-            break;
-        }
-    }
-}
-
-
-Player = function(socketId, style) {
-    this.socketId = socketId;
-    this.style = style;
-    this.location = { x: 10, y: 10 };
-    this.gameInfo = new GameInfo();
-    this.moveSpeed = 0.5;
-}
-
-Player.prototype.Update = function () {
-    // TODO: update the player location to follow the mouse
-    // 1) Calculate and normalize direction vector from current location to mouse location
-    // 2) Calculate player velocity by adding move speed to direction vector
-
-    let normalizedDirectionVector = getNormalizedVector(mouseLocation.x, mouseLocation.y, this.location.x, this.location.y);
-    let velocity = {
-        x: normalizedDirectionVector.x * this.moveSpeed,
-        y: normalizedDirectionVector.y * this.moveSpeed
-    };
-    let velocityValid = !(isNaN(velocity.x) || isNaN(velocity.y));
-    if (velocityValid) {
-        this.location.x += velocity.x;
-        this.location.y += velocity.y;
-    }
-}
-
-Player.prototype.GetRenderPayload = function (gameInfo) {
-    this.gameInfo = gameInfo;
-}
-
-Player.prototype.Render = function (graphics) {
-    graphics.fillStyle = this.style;
-    graphics.beginPath();
-    graphics.scale(1, 1);
-    graphics.arc(this.location.x, this.location.y, 10, 0, 2 * Math.PI);
-    graphics.fill();
-    graphics.strokeStyle = 'black';
-    graphics.stroke();
+Game.prototype.RemovePlayer = function (socketId) {
+    // for (let index = 0; index < this.PlayerLocations.length; index++) {
+    //     const playerLocation = this.PlayerLocations[index];
+    //     if (playerLocation.socketId === socketId) {
+    //         this.PlayerLocations.splice(index, 1);
+    //         break;
+    //     }
+    // }
 }
