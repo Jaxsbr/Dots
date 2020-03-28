@@ -14,6 +14,8 @@ window.addEventListener('load', function() {
         let color = getRandomcolor();
         game.player = new Player(this.id, color);
     });
+
+    socket.on('player info', game.GetOtherPlayerInfo.bind(this));
 });
 
 window.addEventListener('mousemove', function(mouseEvent) {
@@ -41,19 +43,7 @@ Game = function() {
     this.canvas.width = 600;
     this.canvas.height = 600;
     this.graphics = this.canvas.getContext('2d');
-    this.graphics.setTransform(1, 0, 0, 1, 0, 0)
-
     this.gameInfo = new GameInfo();
-    // this.gameInfo.AddPlayer('player1SocketId', 'red', 10, 10);
-    // this.gameInfo.AddPlayer('player2SocketId', 'blue', 30, 40);
-    // this.gameInfo.AddPlayer('player3SocketId', 'green', 50, 20);
-
-
-    socket.on('player info', function (playerInfo) {
-        // TODO:
-        // Insert or update
-        // This should not be the current players info, only other players info
-    });
 }
 
 Game.prototype.Loop = function() {
@@ -66,6 +56,15 @@ Game.prototype.Loop = function() {
 
     this.Update();
     this.Render();
+}
+
+Game.prototype.GetOtherPlayerInfo = function(playerInfo) {
+    // Receive other players info.
+    // Store their info and use it to render other players.
+
+    // TODO:
+    // Insert or update
+    // This should not be the current players info, only other players info
 }
 
 Game.prototype.Update = function() {
@@ -109,6 +108,8 @@ Game.prototype.RenderOtherPlayers = function(playerLocation) {
 
 GameInfo = function() {
     // object signature:  { socketId: 'me', style: 'red', x: 100, y: 100 }
+    // TODO:
+    // Rename to playerInfo
     this.PlayerLocations = [];
 }
 

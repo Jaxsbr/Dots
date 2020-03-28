@@ -8,29 +8,18 @@ app.get("/", function(req, res) {
   res.sendFile(__dirname + "/index.html");
 });
 
-// Server:
-// Receive individual socket emits and store payloads
-// Broadcasts stored payloads to each socket at regular intervals
-
 io.on("connection", function(socket) {
   console.log("a user connected" + socket.id);
 
-  //io.emit('player joined', socket.id);
-  //socket.emit('player joined', socket.id);
-  //socket.broadcast.to(socket.id).emit('player joined', socket.id);
+  socket.on('player info', function(playerInfo){
+    console.log('player info received');
+    // A player sends their info to the server.
+    // The server broadcast this to other players.
 
-  // Send to all others sockets (exclude self)
-  //socket.broadcast.emit('hi')
-
-  // Send to all sockets
-  //io.emit('chat message', msg);
-
-  socket.on('status', function(statusPayload){
-    console.log(statusPayload);
-  });
-
-  socket.on("chat message", function(msg){
-      console.log('message: ' + msg);
+    // TODO:
+    // Store all players info here.
+    // This will be used to do collision detection.
+    socket.broadcast.emit(playerInfo);
   });
 
   socket.on("disconnect", function() {
