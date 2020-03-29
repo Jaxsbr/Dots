@@ -34,5 +34,8 @@ socket.on('state', function (players) {
         context.beginPath();
         context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
         context.fill();
+
+        context.font = "10px Arial";
+        context.fillText(id, player.x, player.y);
     }
 });
