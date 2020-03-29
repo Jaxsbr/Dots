@@ -28,22 +28,26 @@ io.on('connection', function (socket) {
       y: 300
     };
   });
-  socket.on('movement', function (data) {
+  socket.on('mouseData', function (mouseData) {
     var player = players[socket.id] || {};
-    if (data.left) {
-      player.x -= 5;
-    }
-    if (data.up) {
-      player.y -= 5;
-    }
-    if (data.right) {
-      player.x += 5;
-    }
-    if (data.down) {
-      player.y += 5;
-    }
+    var direction = getNormalizedVector(
+      mouseData.x,
+      mouseData.y,
+      player.x,
+      player.y
+    );
+    
+    player.x += (direction.x * 0.5);
+    player.y += (direction.y * 0.5);
   });
 });
+
+getNormalizedVector = function (x1, y1, x2, y2) {
+  var px = x1 - x2;
+  var py = y1 - y2;
+  var dist = Math.sqrt(px * px + py * py);
+  return { x: px / dist, y: py / dist };
+};
 
 setInterval(function () {
   io.sockets.emit('state', players);
