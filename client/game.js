@@ -15,10 +15,13 @@ Game = function() {
   this.socket.emit("new player");
   this.socket.on("state", this.HandleStateChange.bind(this));
 
-  setInterval(this.Loop.bind(this), 1000 / 60);
+  //setInterval(this.Loop.bind(this), 1000 / 60);
+  this.Loop();
 };
 
 Game.prototype.Loop = function() {
+  requestAnimationFrame(this.Loop.bind(this));
+
   this.socket.emit("mouseData", this.mouseData);
   this.Render();
 };
