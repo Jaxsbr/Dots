@@ -5,6 +5,11 @@ module.exports = {
             var py = y1 - y2;
             var dist = Math.sqrt(px * px + py * py);
             return { x: px / dist, y: py / dist }
+        },
+        distance: function(x1, y1, x2, y2) {
+            var px = x1 - x2;
+            var py = y1 - y2;
+            return Math.sqrt(px * px + py * py);
         }
     },
     random: {

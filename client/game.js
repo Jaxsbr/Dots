@@ -47,7 +47,7 @@ Game.prototype.RenderPlayers = function() {
   for (var id in this.players) {
     var player = this.players[id];
     this.context.beginPath();
-    this.context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
+    this.context.arc(player.x, player.y, player.size, 0, 2 * Math.PI);
     this.context.fill();
 
     this.context.font = "10px Arial";
