@@ -21,6 +21,7 @@ module.exports = {
     setInterval(function() {
       broadcastState();
       spawnDots();
+      checkPlayerCollision();
     }, 1000 / 60);
 
     broadcastState = function() {
@@ -68,7 +69,7 @@ module.exports = {
       var player = players[socketId] || {};
 
       applyVelocity(player, mouseData);
-      checkCollision(player);
+      checkDotCollision(player);
     };
 
     applyVelocity = function(player, mouseData) {
@@ -83,7 +84,7 @@ module.exports = {
       player.y += direction.y * 0.5;
     };
 
-    checkCollision = function(player) {
+    checkDotCollision = function(player) {
       for (let index = 0; index < dots.length; index++) {
         const dot = dots[index];
         const collisionRange = dot.size + player.size;
@@ -98,6 +99,25 @@ module.exports = {
           removeDot(index);
           player.size++;
           broadcastState();
+        }
+      }
+    };
+
+    checkPlayerCollision = function() {
+      for (var idA in this.players) {
+        var playerA = this.players[idA];
+
+        for (var idB in this.players) {
+          var playerB = this.players[idB];
+
+          if (idA !== idB) {
+            // TODO:
+            // 1) Check if A and B are colliding
+            // 2) By how much are they overlapping
+            // 3) Who is the bigger player
+            // 3.a) If player A is smaller >> don't do anything
+            // 3.b) If player A is bigger >> create action to absorb player B
+          }
         }
       }
     };
