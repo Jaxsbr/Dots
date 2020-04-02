@@ -14,8 +14,6 @@ Game = function() {
 
   this.socket.emit("new player");
   this.socket.on("state", this.HandleStateChange.bind(this));
-
-  //setInterval(this.Loop.bind(this), 1000 / 60);
   this.Loop();
 };
 
@@ -46,6 +44,9 @@ Game.prototype.RenderPlayers = function() {
   this.context.fillStyle = "green";
   for (var id in this.players) {
     var player = this.players[id];
+    if (!player.alive) {
+      continue;
+    }
     this.context.beginPath();
     this.context.arc(player.x, player.y, player.size, 0, 2 * Math.PI);
     this.context.fill();
