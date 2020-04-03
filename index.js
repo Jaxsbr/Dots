@@ -1,11 +1,11 @@
-var express = require("express");
-var http = require("http");
-var path = require("path");
-var socketIO = require("socket.io");
-var app = express();
-var server = http.Server(app);
-var io = socketIO(server);
-var game = require("./server/game");
+const express = require("express");
+const http = require("http");
+const path = require("path");
+const socketIO = require("socket.io");
+const app = express();
+const server = http.Server(app);
+const io = socketIO(server);
+const game = require("./server/game");
 const port = 3333;
 
 app.set("port", port);
