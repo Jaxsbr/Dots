@@ -2,18 +2,71 @@
 <html>
   <head>
     <title>Socket.IO chat</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat"
+      rel="stylesheet"
+    />
     <style>
       canvas {
         border: 5px solid black;
+      }
+
+      .input-border {
+        border: 1px solid #ccc !important;
+        padding: 0.01em 16px;
+        border-radius: 16px;
+        max-width: 160px;
+      }
+
+      .input-label {
+        font-family: Montserrat;
+      }
+
+      .play-button {
+        width: 100%;
+        margin-top: 15px;
+        margin-bottom: 5px;
       }
     </style>
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
+    <div id="join-input" class="input-border">
+      <div>
+        <p class="input-label">Game Room</p>
+        <input id="room-input" type="text" />
+      </div>
+      <div>
+        <p class="input-label">What's your alias</p>
+        <input id="alias-input" type="text" />
+      </div>
+      <div>
+        <input
+          id="play-button"
+          class="play-button"
+          type="button"
+          value="Play"
+          onclick="playClicked()"
+        />
+      </div>
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
   </body>
   <script src="/client/game.js"></script>
   <script>
-    const game = new Game();
+    let game;
+
+    function playClicked() {
+      const room = document.getElementById("room-input").value;
+      const alias = document.getElementById("alias-input").value;
+
+      if (room && alias) {
+        const joinInput = document.getElementById("join-input");
+        const canvas = document.getElementById("canvas");
+        joinInput.style.display = "none";
+        canvas.style.display = "block";
+        game = new Game();
+      }
+    }
   </script>
 </html>
